@@ -5,6 +5,8 @@ It a tools intended for static sites. It makes files smaller. There are other to
 
 It used Zopfli and Brotli for general file compression. It currently uses Optipng and Jpegoptim for image compression.
 
+This software was not tested on animals. Or in any way really.
+
 ## Installation & Requirements
 
  - Optipng
