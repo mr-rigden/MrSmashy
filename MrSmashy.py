@@ -2,12 +2,13 @@ import hashlib
 import logging
 import os
 import subprocess
+import sys
 
 from tinydb import TinyDB, Query
 
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
-db = TinyDB('db.json')
+db = TinyDB('fileFingerPrints.json')
 
 
 def getFileExtension(filePath):
@@ -112,8 +113,16 @@ def PNG_Smash(filePath):
 def JPEG_Smash(filePath):
         smashCommand = ['jpegoptim', '--strip-all', '--all-progressive', '--max=90', filePath]
         output = subprocess.check_output(smashCommand)
-        logging.warning("   JPEG has been optimized")
+        logging.warning("   File has been Zopfli compressed")
 
 
-listOfListFiles = getListOfFiles('/home/jason/orko/www/jasonrigden.com')
-smashFiles(listOfListFiles)
+if __name__ == '__main__':
+    target = sys.argv[1]
+    if os.path.isdir(target):
+        logging.warning("Smashing Directory {}".format(target))
+        listOfListFiles = getListOfFiles(target)
+        smashFiles(listOfListFiles)
+        sys.exit()
+    else:
+        logging.error("That does not seem to be a valid directory")
+        sys.exit(1)
