@@ -6,6 +6,8 @@ import sys
 
 from tinydb import TinyDB, Query
 
+COMPRESSION_WHITE_LIST = ['atom', 'css', 'csv',
+                          'geojson', 'htm', 'html', 'json', 'js', 'kml', 'rss', 'txt', 'xml']
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 db = TinyDB('fileFingerPrints.json')
@@ -65,11 +67,15 @@ def smashFiles(listOfFiles):
     print(len(listOfFiles))
     for filePath in listOfFiles:
         fileName = getFileName(filePath)
+        extension = getFileExtension(filePath)
         if fileName.endswith('.gz'):
             continue
         if fileName.endswith('.br'):
             continue
         logging.warning("Looking at {}".format(fileName))
+        if not extension in COMPRESSION_WHITE_LIST:
+            logging.warning("   I don't smash this type of file".format(fileName))
+            continue
         if hasFileChanged(filePath):
             smashImage(filePath)
             zopfiFile(filePath)
