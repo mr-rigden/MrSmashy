@@ -6,11 +6,20 @@ import sys
 
 from tinydb import TinyDB, Query
 
-COMPRESSION_WHITE_LIST = ['atom', 'css', 'csv',
-                          'geojson', 'htm', 'html', 'json', 'js', 'kml', 'rss', 'txt', 'xml']
-
 logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+COMPRESSION_WHITE_LIST = ['atom', 'css', 'csv', 'geojson',
+                          'htm', 'html', 'json', 'js', 'kml',
+                          'rss', 'txt', 'xml']
+
 db = TinyDB('fileFingerPrints.json')
+
+
+def brotliFile(filePath):
+    brFileName = filePath + ".br"
+    output = subprocess.check_output(
+        ["brotli", "--force", "-i", filePath, "-o", brFileName])
+    logging.warning("   File has been Brotli compressed")
 
 
 def getFileExtension(filePath):
@@ -56,10 +65,11 @@ def hasFileChanged(filePath):
         return True
 
 
-
-def updateFileHash(filePath):
-    currentHash = getHash(filePath)
-    db.insert({'filePath': filePath, 'hash': currentHash})
+def JPEG_Smash(filePath):
+    smashCommand = ['jpegoptim', '--strip-all',
+                    '--all-progressive', '--max=90', filePath]
+    output = subprocess.check_output(smashCommand)
+    logging.warning("   File has been Zopfli compressed")
 
 
 def smashFiles(listOfFiles):
@@ -74,7 +84,8 @@ def smashFiles(listOfFiles):
             continue
         logging.warning("Looking at {}".format(fileName))
         if not extension in COMPRESSION_WHITE_LIST:
-            logging.warning("   I don't smash this type of file".format(fileName))
+            logging.warning(
+                "   I don't smash this type of file".format(fileName))
             continue
         if hasFileChanged(filePath):
             smashImage(filePath)
@@ -85,18 +96,8 @@ def smashFiles(listOfFiles):
             logging.warning("   I have fully smashed {}".format(fileName))
         else:
             logging.warning("   I will not smash {}".format(fileName))
-    logging.warning("{} files have been smashed this session".format(changedFiles))
-
-
-def brotliFile(filePath):
-    brFileName = filePath + ".br"
-    output = subprocess.check_output(["brotli", "--force", "-i", filePath, "-o", brFileName])
-    logging.warning("   File has been Brotli compressed")
-
-def zopfiFile(filePath):
-    #output = subprocess.check_output(["zopfli", "--i1000", filePath])
-    output = subprocess.check_output(["zopfli", "--i1", filePath])
-    logging.warning("   File has been Zopfli compressed")
+    logging.warning(
+        "{} files have been smashed this session".format(changedFiles))
 
 
 def smashImage(filePath):
@@ -105,9 +106,10 @@ def smashImage(filePath):
     JPEG_Extensions = ["jpeg", "jpg"]
     if extension in JPEG_Extensions:
         JPEG_Smash(filePath)
-    PNG_Extensions = ["png",]
+    PNG_Extensions = ["png", ]
     if extension in PNG_Extensions:
         PNG_Smash(filePath)
+
 
 def PNG_Smash(filePath):
     #smashCommand = ['optipng', '-o7', filePath]
@@ -116,15 +118,20 @@ def PNG_Smash(filePath):
     logging.warning("   PNG has been optimized")
 
 
-def JPEG_Smash(filePath):
-        smashCommand = ['jpegoptim', '--strip-all', '--all-progressive', '--max=90', filePath]
-        output = subprocess.check_output(smashCommand)
-        logging.warning("   File has been Zopfli compressed")
+def updateFileHash(filePath):
+    currentHash = getHash(filePath)
+    db.insert({'filePath': filePath, 'hash': currentHash})
+
 
 def updatePermissions(target):
     logging.warning("Updating File Permissions for {}".format(target))
     output = subprocess.check_output(['chmod', '-R', '0755', target])
 
+
+def zopfiFile(filePath):
+    #output = subprocess.check_output(["zopfli", "--i1000", filePath])
+    output = subprocess.check_output(["zopfli", "--i1", filePath])
+    logging.warning("   File has been Zopfli compressed")
 
 
 if __name__ == '__main__':
