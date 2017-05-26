@@ -115,6 +115,11 @@ def JPEG_Smash(filePath):
         output = subprocess.check_output(smashCommand)
         logging.warning("   File has been Zopfli compressed")
 
+def updatePermissions(target):
+    logging.warning("Updating File Permissions for {}".format(target))
+    output = subprocess.check_output(['chmod', '-R', '0755', target])
+
+
 
 if __name__ == '__main__':
     target = sys.argv[1]
@@ -122,6 +127,7 @@ if __name__ == '__main__':
         logging.warning("Smashing Directory {}".format(target))
         listOfListFiles = getListOfFiles(target)
         smashFiles(listOfListFiles)
+        updatePermissions(target)
         sys.exit()
     else:
         logging.error("That does not seem to be a valid directory")
