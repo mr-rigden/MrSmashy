@@ -75,6 +75,8 @@ def JPEG_Smash(filePath):
 def smashFiles(listOfFiles):
     changedFiles = 0
     print(len(listOfFiles))
+    totalFiles = len(listOfFiles) #Holds total in queue
+    currentFile = 1               #Holds the current iteration
     for filePath in listOfFiles:
         fileName = getFileName(filePath)
         extension = getFileExtension(filePath)
@@ -86,6 +88,8 @@ def smashFiles(listOfFiles):
         if not extension in COMPRESSION_WHITE_LIST:
             logging.warning(
                 "   I don't smash this type of file".format(fileName))
+            print("      {:.0%}".format(currentFile/totalFiles)) #Print the percentage complete
+            currentFile += 1                                         #Count to next file
             continue
         if hasFileChanged(filePath):
             smashImage(filePath)
@@ -94,6 +98,8 @@ def smashFiles(listOfFiles):
             updateFileHash(filePath)
             changedFiles += 1
             logging.warning("   I have fully smashed {}".format(fileName))
+            print("      {:.0%}".format(currentFile/totalFiles)) #Print the percentage complete
+            currentFile += 1                                         #Count to next file
         else:
             logging.warning("   I will not smash {}".format(fileName))
     logging.warning(
